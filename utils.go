@@ -3,15 +3,15 @@ package utils
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 
-	"github.com/asaskevich/govalidator"
-
 	"github.com/dgrijalva/jwt-go"
+	"github.com/luthfikw/govalidator"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -104,10 +104,15 @@ func StringToInt(value string, def int64) int64 {
 }
 
 // ReadFromToken is a function to read data from jwt with *http.Request as its param
-func ReadFromToken(r *http.Request) (result *Token, err error) {
-	err = json.Unmarshal([]byte(r.Context().Value("token").(string)), result)
-	if err != nil || result.UserID <= 0 || !govalidator.IsEmail(strings.TrimSpace(result.Email)) {
-		return nil, errors.New("Invalid Token")
+func ReadFromToken(r *http.Request) (result Token, err error) {
+	tokens := strings.Split(fmt.Sprint(r.Context().Value("token")), "|")
+	if len(tokens) < 1 {
+		return result, errors.New("Invalid Token")
+	}
+	result.UserID = StringToInt(tokens[0], 0)
+	result.Email = tokens[1]
+	if err != nil || len(tokens) != 2 || !govalidator.IsEmail(strings.TrimSpace(result.Email)) || result.UserID <= 0 {
+		return result, errors.New("Invalid Token")
 	}
 	return result, nil
 }

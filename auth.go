@@ -2,8 +2,8 @@ package utils
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -17,7 +17,10 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		requestPath := r.URL.Path
 
 		// disable auth as per array of strings value
-		for _, value := range []string{} {
+		for _, value := range []string{
+			"/api/user/new",
+			"/api/user/login",
+		} {
 			if value == requestPath || strings.HasPrefix(requestPath, "/docs") {
 				next.ServeHTTP(w, r)
 				return
@@ -63,11 +66,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		}
 
 		//Everything went well, proceed with the request and set the caller to the user retrieved from the parsed token
-		tokenByte, err := json.Marshal(map[string]interface{}{
-			"user_id": tk.Id,
-			"email":   tk.Email,
-		})
-		ctx := context.WithValue(r.Context(), "token", tokenByte)
+		ctx := context.WithValue(r.Context(), "token", fmt.Sprintf("%d|%s", tk.UserID, tk.Email))
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r) //proceed in the middleware chain!
 	})
