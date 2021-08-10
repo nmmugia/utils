@@ -1,4 +1,4 @@
-module github.com/nmmugia/gnecommerce/utils
+module github.com/nmmugia/utils
 
 go 1.16
 
