@@ -11,12 +11,13 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-var JwtAuthentication = func(next http.Handler, notAuth []string) http.Handler {
+var JwtAuthentication = func(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestPath := r.URL.Path
 
-		for _, value := range notAuth {
+		// disable auth as per array of strings value
+		for _, value := range []string{} {
 			if value == requestPath || strings.HasPrefix(requestPath, "/docs") {
 				next.ServeHTTP(w, r)
 				return
